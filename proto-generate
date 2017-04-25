@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+protos="example.proto"
+proto_include="-I."
+protoc_version=3.0.2
+protoc_bin=tmp/protoc/bin/protoc
+
+if [ ! -f "$protoc_bin" ]; then
+    echo "--> Fetching protoc ${protoc_version}"
+    case "`uname`" in
+    'Linux')
+        os="linux"
+        ;;
+    'Darwin')
+        os=osx
+        ;;
+    *)
+        echo "Current OS does not have protoc URL configured"
+        exit 1
+        ;;
+    esac
+    arch="`uname -m`"
+    rm -rf tmp/protoc
+    mkdir -p tmp/protoc
+    (
+        cd tmp/protoc &&
+        curl -fsLO "https://github.com/google/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-${os}-${arch}.zip" &&
+        unzip "protoc-${protoc_version}-${os}-${arch}.zip" &&
+        chmod +x bin/protoc
+    ) || ( echo "Error downloading protoc"; exit 1)
+fi
+
+echo "--> Generate ruby proto bindings"
+ruby_out_dir="."
+mkdir -p ${ruby_out_dir}
+bundle
+bundle exec ${protoc_bin} \
+  ${proto_include} \
+  --ruby_out=${ruby_out_dir} \
+  ${protos}

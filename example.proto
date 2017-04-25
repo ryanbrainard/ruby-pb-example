@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+message Timestamped {
+    google.protobuf.Timestamp created_at = 1;
+}
+
+message Sequential {
+    int64 seq = 1;
+}
